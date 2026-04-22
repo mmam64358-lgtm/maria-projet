@@ -1,0 +1,6 @@
+Flask==3.1.0
+Authlib==1.2.1
+psycopg2==2.9.9
+python-dotenv==1.0.1
+requests==2.33.0
+blinker==1.9.0

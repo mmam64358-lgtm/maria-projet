@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>FireSafe AI - Emergency Portal</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0d;
+            color: #f0ece8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Grid overlay ── */
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,100,20,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,100,20,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── Canvas for particles ── */
+        #fire-canvas {
+            position: fixed; inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .portal-container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            animation: fadeUp 0.8s ease;
+        }
+
+        .portal-card {
+            background: rgba(12, 8, 5, 0.7);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 100, 20, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 
+                0 40px 80px rgba(0,0,0,0.6),
+                0 0 0 1px rgba(255,100,20,0.08),
+                inset 0 1px 0 rgba(255,150,80,0.1);
+        }
+
+        .portal-header {
+            margin-bottom: 32px;
+        }
+
+        .portal-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .portal-desc {
+            font-size: 0.95rem;
+            color: rgba(240, 236, 232, 0.5);
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(240, 236, 232, 0.6);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #fff;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: #ff6a00;
+            background: rgba(255, 100, 20, 0.05);
+            box-shadow: 0 0 0 4px rgba(255, 100, 20, 0.15);
+        }
+
+        .portal-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #ff9f43;
+            margin-bottom: 24px;
+        }
+
+        .btn-proceed {
+            width: 100%;
+            background: linear-gradient(90deg, #ffb347, #ff6a00, #e63946);
+            background-size: 200% auto;
+            border: none;
+            color: #fff;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(255, 80, 0, 0.4);
+        }
+
+        .btn-proceed:hover {
+            background-position: right center;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(255, 80, 0, 0.55);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 32px 0;
+            color: rgba(240, 236, 232, 0.2);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-google {
+            width: 100%;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .btn-google:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ── REPORT VIEW ── */
+        .report-view {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        #map {
+            height: 240px;
+            border-radius: 16px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,100,20,0.2);
+            z-index: 5;
+        }
+
+        .field-group {
+            margin-bottom: 18px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(240, 236, 232, 0.5);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .field-input, .field-select, .field-textarea {
+            width: 100%;
+            background: rgba(255, 100, 20, 0.05);
+            border: 1px solid rgba(255, 100, 20, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .field-input:focus, .field-select:focus, .field-textarea:focus {
+            border-color: #ff6a00;
+            background: rgba(255, 100, 20, 0.1);
+        }
+
+        .btn-gps {
+            background: rgba(255, 100, 20, 0.1);
+            border: 1px solid rgba(255, 100, 20, 0.3);
+            color: #ff9f43;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-gps:hover {
+            background: rgba(255, 100, 20, 0.2);
+            border-color: #ff6a00;
+        }
+
+        .btn-submit {
+            background: #e63946;
+            color: #fff;
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: #ff4b2b;
+            box-shadow: 0 4px 20px rgba(230, 57, 70, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 100, 20, 0.1);
+            padding: 10px 14px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid #ff6a00;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .user-email {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .btn-logout {
+            color: #e63946;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="fire-canvas"></canvas>
+
+<div class="portal-container">
+    {% if not session.get('user') %}
+    <!-- ── LOGIN VIEW ── -->
+    <div class="portal-card">
+        <header class="portal-header">
+            <h1 class="portal-title">Emergency Portal</h1>
+            <p class="portal-desc">Every second counts. Enter your email to instantly access the reporting map.</p>
+        </header>
+
+        <form action="/login/local" method="POST">
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-input" required placeholder="you@domain.com">
+            </div>
+
+            <div class="portal-status">
+                <i class="fa-solid fa-shield-halved"></i>
+                No password required for rapid access
+            </div>
+
+            <button type="submit" class="btn-proceed">
+                Proceed to Map
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="divider">OR</div>
+
+        <a href="/login" class="btn-google">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google">
+            1-Click Google Sign In
+        </a>
+    </div>
+    {% else %}
+    <!-- ── REPORT VIEW ── -->
+    <div class="portal-card report-view">
+        <div class="user-chip">
+            <img src="{{ session['user']['picture'] or 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' }}" class="user-avatar">
+            <div class="user-info">
+                <div class="user-name">{{ session['user']['name'] }}</div>
+                <div class="user-email">{{ session['user']['email'] }}</div>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#e63946"></i>
+            Report Emergency
+        </h2>
+
+        <form id="reportForm">
+            <div class="field-group">
+                <label class="field-label">Situation Description</label>
+                <textarea id="desc" class="field-textarea" rows="3" required placeholder="What is happening?"></textarea>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Severity Level</label>
+                <select id="severity" class="field-select">
+                    <option value="medium">🟠 Medium - Normal Emergency</option>
+                    <option value="high">🔴 High - Severe Danger</option>
+                    <option value="critical">🚨 Critical - Immediate Threat</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label class="field-label">Incident Location</label>
+                <div id="map"></div>
+                <button type="button" class="btn-gps" id="locBtn">
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    Detect GPS Location
+                </button>
+                <div id="locStatus" style="font-size:0.75rem; color:rgba(255,255,255,0.4); text-align:center; margin-top:8px;">
+                    Select point on map or use GPS
+                </div>
+            </div>
+
+            <input type="hidden" id="lat">
+            <input type="hidden" id="lng">
+
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                <i class="fa-solid fa-paper-plane"></i>
+                SUBMIT ALERT
+            </button>
+            <div id="resStatus" style="text-align:center; margin-top:15px; font-weight:700;"></div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+// ── FIRE ENGINE ──
+(function () {
+    const canvas = document.getElementById('fire-canvas');
+    const ctx = canvas.getContext('2d');
+    function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+
+    function drawBeam() {
+        const w = canvas.width, h = canvas.height;
+        const g = ctx.createRadialGradient(w * 0.72, h, 0, w * 0.72, h, w * 0.06);
+        g.addColorStop(0, 'rgba(255,255,200,0.9)');
+        g.addColorStop(0.2, 'rgba(255,160,20,0.7)');
+        g.addColorStop(0.6, 'rgba(220,80,0,0.3)');
+        g.addColorStop(1, 'transparent');
+        ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+        const g2 = ctx.createRadialGradient(w * 0.72, h, 0, w * 0.72, h, w * 0.5);
+        g2.addColorStop(0, 'rgba(200,70,0,0.35)');
+        g2.addColorStop(0.5, 'rgba(140,35,0,0.12)');
+        g2.addColorStop(1, 'transparent');
+        ctx.fillStyle = g2; ctx.fillRect(0, 0, w, h);
+    }
+
+    class Particle {
+        constructor() { this.reset(true); }
+        reset(init) {
+            const bx = canvas.width * 0.72;
+            this.x = bx + (Math.random() - 0.5) * canvas.width * 0.5;
+            this.y = init ? Math.random() * canvas.height : canvas.height + 10;
+            this.r = Math.random() < 0.8 ? Math.random() * 1.5 + 0.4 : Math.random() * 3 + 1.5;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = -(Math.random() * 1.6 + 0.5);
+            const h = Math.random() * 30 + 10;
+            this.color = `hsl(${h},90%,${Math.random()*25+55}%)`;
+            this.life = 0; this.maxLife = Math.random() * 200 + 90;
+            this.ws = Math.random() * 0.03 + 0.01;
+        }
+        update() {
+            this.life++;
+            this.x += this.vx + Math.sin(this.life * this.ws) * 0.5;
+            this.y += this.vy; this.vy -= 0.004;
+            const t = this.life / this.maxLife;
+            this.a = t < 0.15 ? (t/0.15)*0.85 : (1-t)*0.85;
+            if (this.life >= this.maxLife || this.y < -10) this.reset();
+        }
+        draw() {
+            ctx.save();
+            const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r*4.5);
+            g.addColorStop(0, this.color); g.addColorStop(1, 'transparent');
+            ctx.globalAlpha = this.a;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.r*4.5, 0, Math.PI*2);
+            ctx.fillStyle = g; ctx.fill();
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.r*0.6, 0, Math.PI*2);
+            ctx.fillStyle = '#fffde7'; ctx.globalAlpha = this.a * 0.9; ctx.fill();
+            ctx.restore();
+        }
+    }
+    const particles = Array.from({length: 80}, () => new Particle());
+    let beam = 0;
+    (function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        beam += 0.02;
+        ctx.globalAlpha = 0.85 + Math.sin(beam) * 0.15;
+        drawBeam();
+        ctx.globalAlpha = 1;
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(loop);
+    })();
+})();
+
+// ── FORM LOGIC ──
+{% if session.get('user') %}
+const map = L.map('map').setView([36.166, 1.333], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OS' }).addTo(map);
+let marker;
+function setLocation(lat, lng) {
+    document.getElementById('lat').value = lat;
+    document.getElementById('lng').value = lng;
+    document.getElementById('locStatus').textContent = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    document.getElementById('submitBtn').disabled = false;
+    if (marker) marker.setLatLng([lat, lng]);
+    else marker = L.marker([lat, lng]).addTo(map);
+    map.setView([lat, lng], 14);
+}
+map.on('click', (e) => setLocation(e.latlng.lat, e.latlng.lng));
+document.getElementById('locBtn').onclick = () => {
+    navigator.geolocation.getCurrentPosition((p) => setLocation(p.coords.latitude, p.coords.longitude));
+};
+document.getElementById('reportForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const resStatus = document.getElementById('resStatus');
+    resStatus.innerHTML = "Sending alert...";
+    const payload = {
+        title: "Citizen Report",
+        description: document.getElementById('desc').value,
+        severity: document.getElementById('severity').value,
+        lat: parseFloat(document.getElementById('lat').value),
+        lng: parseFloat(document.getElementById('lng').value),
+        reporter_name: "{{ session['user']['name'] }}",
+        reporter_email: "{{ session['user']['email'] }}"
+    };
+    try {
+        const res = await fetch('/api/alerts', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            resStatus.style.color = "#4ade80";
+            resStatus.innerHTML = "SUCCESS: Emergency team notified!";
+            document.getElementById('reportForm').reset();
+            document.getElementById('submitBtn').disabled = true;
+            if(marker) map.removeLayer(marker);
+        } else {
+            resStatus.style.color = "#ef4444";
+            resStatus.innerHTML = "Error sending alert.";
+        }
+    } catch(e) {
+        resStatus.style.color = "#ef4444";
+        resStatus.innerHTML = "Network error.";
+    }
+};
+
+</script>
+</body>
+</html>

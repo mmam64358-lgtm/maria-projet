@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireSafe AI - Agent Terminal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 20px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+        .mission-card {
+            background: linear-gradient(145deg, rgba(230,57,70,0.12), rgba(16,14,18,0.92));
+            border: 1px solid rgba(230,57,70,0.4);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 16px;
+        }
+        .mission-status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+        .mission-stat { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; text-align: center; }
+        .mission-stat h4 { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 6px; }
+        .mission-stat .val { font-size: 1.4rem; font-weight: 800; color: #ff9f43; }
+        .action-btn {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            font-weight: 700; font-size: 0.95rem; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            margin-bottom: 10px; font-family: 'Inter', sans-serif;
+        }
+        .action-btn:hover { transform: translateY(-2px); }
+        .btn-arrived { background: linear-gradient(90deg, #ff6a00, #ee0979); color: #fff; box-shadow: 0 4px 15px rgba(255,100,0,0.4); }
+        .btn-complete { background: linear-gradient(90deg, #11998e, #38ef7d); color: #000; box-shadow: 0 4px 15px rgba(50,200,100,0.4); }
+        .btn-hq { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+        .empty-mission { text-align: center; padding: 50px 20px; }
+        .empty-mission .icon { font-size: 3rem; display: block; margin-bottom: 15px; filter: grayscale(0.5); }
+    </style>
+</head>
+<body>
+    <!-- Fire Background -->
+    <div class="fire-container">
+        <div class="flame flame-glow"></div>
+        <div class="flame flame-mid"></div>
+        <div class="flame flame-left"></div>
+        <div class="flame flame-right"></div>
+        <div class="flame flame-inner"></div>
+        <div class="flame flame-core"></div>
+    </div>
+    <div class="ember-container" id="ember-container"></div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="brand">
+                <h1>🚒 AGENT</h1>
+            </div>
+            <nav class="nav-buttons">
+                <button class="nav-btn active" id="btn-dashboard" onclick="setMode('dashboard')">
+                    <span class="icon">🛰️</span> MISSION
+                </button>
+                <button class="nav-btn" id="btn-view-reports" onclick="setMode('reports')">
+                    <span class="icon">📋</span> HISTORY
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="system-status">LINK SECURE</div>
+                <a href="/logout" style="color:rgba(255,255,255,0.3); font-size:0.75rem; text-decoration:none; margin-top:8px; display:block;">🚪 Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar glass-panel" style="margin-bottom:14px; flex-shrink:0;">
+                <div class="search-box">
+                    <span class="icon">📡</span>
+                    <span style="font-size:0.85rem; font-weight:600; color:rgba(255,200,50,0.8);">SCANNING FREQUENCIES...</span>
+                </div>
+                <div class="header-controls" style="display:flex; align-items:center; gap:14px;">
+                    <div class="user-pill">
+                        {% if user.picture and user.picture.startswith('http') %}
+                        <img src="{{ user.picture }}" alt="" style="width:26px; height:26px; border-radius:50%;">
+                        {% else %}
+                        <span style="width:26px; height:26px; border-radius:50%; background:#e63946; display:inline-flex; align-items:center; justify-content:center; font-weight:800;">{{ user.name[0]|upper }}</span>
+                        {% endif %}
+                        <span style="font-size:0.85rem; font-weight:600;">{{ user.name }} (AGENT)</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Map -->
+            <div id="map" style="height:380px; width:100%; border-radius:10px; border:1px solid rgba(230,57,70,0.4); flex-shrink:0; margin-bottom:16px; position:relative; z-index:10;"></div>
+
+            <!-- Panels -->
+            <div style="flex:1; overflow-y:auto;">
+                <!-- Mission Panel -->
+                <div id="panel-placeholder" class="dashboard-panel-section">
+                    <div class="mission-card">
+                        <div id="active-mission-container" style="margin-top: 10px;">
+                            <div class="empty-mission">
+                                <span class="icon" style="filter: drop-shadow(0 0 10px rgba(255,200,50,0.3));">🛰️</span>
+                                <p style="color:rgba(255,255,255,0.6); font-weight:600; font-size: 0.85rem;">SCANNING FREQUENCIES...<br><span style="opacity: 0.5;">NO ACTIVE DISPATCHES DETECTED</span></p>
+                            </div>
+                        </div>
+
+                        <div id="tactical-mission-details" class="hidden">
+                            <div class="mission-status-grid">
+                                <div class="mission-stat"><h4>ETA</h4><div class="val" id="mission-eta" style="color: #00f0ff; text-shadow: 0 0 10px rgba(0,240,255,0.3);">–</div></div>
+                                <div class="mission-stat"><h4>SEVERITY</h4><div class="val" id="mission-severity" style="color: #ff4b2b; text-shadow: 0 0 10px rgba(255,75,43,0.3);">–</div></div>
+                            </div>
+                        </div>
+
+                        <div id="telemetry-section" style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                            <h4 style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">📡 Tactical Telemetry</h4>
+                            <div style="height: 150px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div id="agent-controls" class="hidden" style="margin-top:20px;">
+                            <button class="action-btn btn-arrived" onclick="updateMissionStatus(null, 'arrived')">
+                                📍 ARRIVED ON SITE
+                            </button>
+                            <button class="action-btn btn-complete" onclick="updateMissionStatus(null, 'extinguished')">
+                                ✅ MISSION COMPLETED
+                            </button>
+                            <button class="action-btn btn-hq" onclick="showToast('Comm Link', 'Connecting HQ...', 'info')">
+                                📞 CONTACT HQ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Panel -->
+                <div id="panel-reports" class="dashboard-panel-section hidden">
+                    <div class="dash-card">
+                        <h3>📋 Mission History</h3>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
+                            <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5);">
+                                <th style="padding:10px; text-align:left;">ID</th>
+                                <th>Severity</th><th>Status</th><th>Location</th>
+                            </tr></thead>
+                            <tbody id="reports-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden -->
+    <input type="hidden" id="user-role" value="fireman">
+    <div id="toast-container" class="toast-container"></div>
+    <div id="notif-dropdown" class="notif-dropdown hidden"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}?v={{ range(1, 99999) | random }}"></script>
+    <script src="{{ url_for('static', filename='js/fire_particles.js') }}"></script>
+</body>
+</html>

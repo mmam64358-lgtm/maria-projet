@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Emergency Portal - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #060507 !important; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            position: relative;
+            z-index: 5;
+            border-radius: 24px;
+            background: rgba(13, 10, 15, 0.95);
+            overflow: hidden;
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(249, 212, 35, 0.2);
+            box-shadow: 
+                0 0 20px rgba(249, 212, 35, 0.3),
+                0 0 40px rgba(255, 204, 51, 0.15),
+                0 60px 120px rgba(0,0,0,0.8);
+            animation: fire-flicker 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes fire-flicker {
+            0% { box-shadow: 0 0 20px rgba(249, 212, 35, 0.4); border-color: rgba(249, 212, 35, 0.1); }
+            100% { box-shadow: 0 0 45px rgba(249, 212, 35, 0.7); border-color: rgba(249, 212, 35, 0.4); }
+        }
+
+        /* Focused Flare Line at the top */
+        .login-container::before {
+            content: "";
+            position: absolute;
+            top: -1px; 
+            left: 10%; 
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 50px rgba(255, 255, 255, 0.4);
+            z-index: 10;
+        }
+
+        /* Atmospheric Sunbeam / Skyline Glow */
+        .login-container::after {
+            content: "";
+            position: absolute;
+            top: -200px; 
+            left: -50%; 
+            right: -50%;
+            height: 600px;
+            background: radial-gradient(circle at 50% 0%, rgba(255, 245, 230, 0.22) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(60px);
+        }
+
+        h2 {
+            color: #fff;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+            text-align: left;
+            letter-spacing: -1px;
+        }
+
+        p.subtitle {
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-box {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+        }
+
+        .input-box:focus {
+            border-color: rgba(255,106,0,0.5);
+            background: rgba(255,255,255,0.06);
+        }
+
+        .hint {
+            color: #ff8c6b;
+            font-size: 0.88rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.9;
+        }
+
+        .submit-btn {
+            background: linear-gradient(90deg, #f9d423 0%, #ff4e50 100%);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 16px;
+            width: 100%;
+            border-radius: 12px;
+            transition: 0.4s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 20px rgba(249, 212, 35, 0.2);
+            text-transform: uppercase;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(249, 212, 35, 0.4);
+        }
+
+        .divider {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .divider hr { border: none; border-top: 1px solid rgba(255,255,255,0.05); }
+
+        .divider span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #0d0a0f;
+            padding: 0 20px;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+
+        .google-btn:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Emergency Portal</h2>
+        <p class="subtitle">Every second counts. Enter your email to instantly access the reporting map and tactical hub.</p>
+        
+        <form action="/login/local" method="POST">
+            <label class="form-label">Email address</label>
+            <input type="email" name="email" class="input-box" required placeholder="you@domain.com">
+            
+            <div class="hint">
+                <i class="fa-solid fa-lock"></i> No password required for identity verification.
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Proceed to Map &nbsp; <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="divider">
+            <hr>
+            <span>OR</span>
+        </div>
+
+        <a href="/login/google" class="google-btn">
+            <img src="https://developers.google.com/identity/images/g-logo.png" style="width: 20px;" alt="Google Logo"> 
+            1-Click Google Sign In
+        </a>
+    </div>
+    <!-- Fire Particle Engine -->
+    <canvas id="fire-canvas" style="position: fixed; inset: 0; pointer-events: none; z-index: 1;"></canvas>
+    <script>
+        const canvas = document.getElementById('fire-canvas');
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize(); window.addEventListener('resize', resize);
+
+        class Particle {
+            constructor() { this.reset(true); }
+            reset(init) {
+                this.x = Math.random() * canvas.width;
+                this.y = init ? Math.random() * canvas.height : canvas.height + 10;
+                this.r = Math.random() * 2 + 0.5;
+                this.vy = -(Math.random() * 1.5 + 0.5);
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.life = Math.random() * 150 + 50;
+                this.maxLife = this.life;
+                this.color = Math.random() > 0.4 ? '#ff5000' : '#f9d423';
+            }
+            update() {
+                this.y += this.vy; this.x += this.vx; this.life--;
+                if (this.life <= 0) this.reset();
+            }
+            draw() {
+                const ratio = this.life / this.maxLife;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.r * ratio, 0, Math.PI * 2);
+                ctx.fillStyle = this.color; ctx.globalAlpha = 0.5 * ratio; ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+        const particles = Array.from({ length: 100 }, () => new Particle());
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

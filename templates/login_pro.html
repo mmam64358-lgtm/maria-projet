@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireSafe AI - Tactical Command Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --midnight: #060608;
+            --panel-bg: rgba(10, 10, 15, 0.96);
+            --primary-blue: #00f0ff;
+            --primary-orange: #ff9800;
+            --text-primary: #f0f0f5;
+            --text-secondary: #94a3b8;
+            --glass-border: rgba(0, 240, 255, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--midnight);
+            color: var(--text-primary);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 1;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-blue), transparent);
+            animation: scan 8s linear infinite;
+            z-index: 2;
+            opacity: 0.3;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 4px;
+            border: 1px solid var(--glass-border);
+            padding: 45px 50px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 0 80px rgba(0, 240, 255, 0.1);
+        }
+
+        .login-container::before, .login-container::after {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            border-color: var(--primary-blue);
+            border-style: solid;
+        }
+        .login-container::before { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+        .login-container::after { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+
+        .header { text-align: center; margin-bottom: 28px; }
+
+        .header .logo-icon {
+            font-size: 2.8rem;
+            color: var(--primary-orange);
+            margin-bottom: 12px;
+            filter: drop-shadow(0 0 10px rgba(255, 152, 0, 0.5));
+        }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--primary-blue);
+            padding: 4px 10px;
+            border: 1px solid var(--primary-blue);
+            border-radius: 20px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+
+        /* ---- LAST SESSION BOX ---- */
+        #last-session-box {
+            display: none;
+            margin-bottom: 22px;
+            padding: 12px 15px;
+            background: rgba(255, 152, 0, 0.05);
+            border: 1px solid rgba(255, 152, 0, 0.2);
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .last-session-label {
+            font-size: 0.6rem;
+            color: rgba(255,152,0,0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .last-session-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .last-session-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: rgba(255,152,0,0.1);
+            border: 1px solid rgba(255,152,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .last-session-info strong {
+            display: block;
+            font-size: 0.85rem;
+            color: #fff;
+        }
+
+        .last-session-info span {
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .last-session-role {
+            margin-left: auto;
+            font-size: 0.62rem;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .last-session-role.admin   { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+        .last-session-role.fireman { background: rgba(249,115,22,0.15); color: #f97316; border: 1px solid rgba(249,115,22,0.3); }
+        .last-session-role.citizen { background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
+
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--primary-blue);
+        }
+
+        input[type="email"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input[type="email"]:focus {
+            border-color: var(--primary-blue);
+            background: rgba(0, 240, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        /* ---- ROLE GRID ---- */
+        .role-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .role-option { cursor: pointer; position: relative; }
+        .role-option input { position: absolute; opacity: 0; }
+
+        .role-card {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 18px 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-secondary);
+        }
+
+        .role-card .role-icon  { font-size: 1.8rem; display: block; margin-bottom: 8px; }
+        .role-card .role-name  { font-size: 0.72rem; font-weight: 700; letter-spacing: 1px; display: block; }
+        .role-card .role-desc  { font-size: 0.6rem; color: rgba(255,255,255,0.25); margin-top: 5px; display: block; }
+
+        .role-option input:checked + .role-card {
+            border-color: var(--primary-orange);
+            color: var(--primary-orange);
+            background: rgba(255, 152, 0, 0.08);
+            box-shadow: 0 0 20px rgba(255, 152, 0, 0.15), inset 0 1px 0 rgba(255,152,0,0.1);
+        }
+        .role-option input:checked + .role-card .role-desc { color: rgba(255,152,0,0.5); }
+        .role-card:hover { border-color: rgba(255,152,0,0.3); background: rgba(255,152,0,0.04); }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-blue);
+            color: var(--midnight);
+            border: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            transition: 0.3s;
+            font-size: 0.88rem;
+        }
+
+        .btn-submit:hover {
+            background: #fff;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.63rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+            opacity: 0.45;
+            line-height: 1.7;
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 5;
+            background: radial-gradient(circle at 50% 50%, transparent, rgba(0,0,0,0.4));
+        }
+    </style>
+</head>
+<body>
+    <div class="glitch-overlay"></div>
+    
+    <div class="login-container">
+        <div class="header">
+            <div class="logo-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+            <h1>Command Node Login</h1>
+            <div class="status-badge"><i class="fa-solid fa-shield-halved"></i> SECURE ENCRYPTED CHANNEL</div>
+        </div>
+
+        <!-- Last Session Info — populated by JS -->
+        <div id="last-session-box">
+            <div class="last-session-label">🕐 Last Active Session</div>
+            <div class="last-session-user">
+                <div class="last-session-avatar" id="ls-avatar">👤</div>
+                <div class="last-session-info">
+                    <strong id="ls-name">—</strong>
+                    <span id="ls-time">—</span>
+                </div>
+                <div class="last-session-role" id="ls-role">—</div>
+            </div>
+        </div>
+
+        <form action="/login/local" method="POST">
+            <div class="form-group">
+                <label>Access Role</label>
+                <div class="role-grid">
+                    <label class="role-option">
+                        <input type="radio" name="role" value="admin" checked>
+                        <div class="role-card">
+                            <span class="role-icon">🛡️</span>
+                            <span class="role-name">ADMINISTRATOR</span>
+                            <span class="role-desc">Full system control</span>
+                        </div>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="fireman">
+                        <div class="role-card">
+                            <span class="role-icon">🚒</span>
+                            <span class="role-name">FIELD AGENT</span>
+                            <span class="role-desc">Tactical operations</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Operational Email</label>
+                <input type="email" name="email" id="email-input" placeholder="agent@firesafe.dz" required>
+            </div>
+
+            <div style="font-size: 0.68rem; color: var(--primary-orange); margin-bottom: 20px; text-align: center; font-family: 'JetBrains Mono', monospace;">
+                <i class="fa-solid fa-key"></i> SECURITY CLEARANCE LEVEL 4 REQUIRED
+            </div>
+
+            <button type="submit" class="btn-submit">
+                ESTABLISH CONNECTION <i class="fa-solid fa-plug"></i>
+            </button>
+        </form>
+
+        <div class="footer-note">
+            RESTRICTED ACCESS AREA.<br>
+            All tactical activities are monitored and logged.<br>
+            UNAUTHORIZED ACCESS IS PROHIBITED BY CITIZEN SAFETY PROTOCOL.
+        </div>
+    </div>
+
+    <script>
+        // ---- Show last logged-in user ----
+        try {
+            const lastUser = localStorage.getItem('firesafe_last_user');
+            if (lastUser) {
+                const u = JSON.parse(lastUser);
+                const box = document.getElementById('last-session-box');
+                document.getElementById('ls-name').textContent = u.name || u.email || '—';
+                const roleEl = document.getElementById('ls-role');
+                roleEl.textContent = (u.role || 'user').toUpperCase();
+                roleEl.className = 'last-session-role ' + (u.role || 'citizen');
+                const icons = { admin: '🛡️', fireman: '🚒', citizen: '👤' };
+                document.getElementById('ls-avatar').textContent = icons[u.role] || '👤';
+                if (u.time) {
+                    const t = new Date(u.time);
+                    document.getElementById('ls-time').textContent =
+                        `Last login: ${t.toLocaleDateString('en-GB')} at ${t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+                }
+                box.style.display = 'block';
+                // Pre-fill form
+                const emailInput = document.getElementById('email-input');
+                if (emailInput && u.email) emailInput.value = u.email;
+                const roleRadio = document.querySelector(`input[name="role"][value="${u.role}"]`);
+                if (roleRadio) roleRadio.checked = true;
+            }
+        } catch(e) {}
+
+        // ---- Save session on submit ----
+        document.querySelector('form').addEventListener('submit', () => {
+            const email = document.getElementById('email-input').value;
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'admin';
+            localStorage.setItem('firesafe_last_user', JSON.stringify({
+                email,
+                name: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
+                role,
+                time: new Date().toISOString()
+            }));
+        });
+
+        // Subtle glitch effect
+        setInterval(() => {
+            const c = document.querySelector('.login-container');
+            c.style.transform = `translate(${(Math.random()-0.5)*2}px, ${(Math.random()-0.5)*2}px)`;
+            setTimeout(() => c.style.transform = 'none', 50);
+        }, 3000);
+    </script>
+</body>
+</html>

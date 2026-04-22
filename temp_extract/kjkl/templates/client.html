@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    
+    <!-- Redirect to Flask backend if opened with Live Server -->
+    <script>
+        if (window.location.port === "5501") {
+            window.location.replace("http://127.0.0.1:5500/");
+        }
+        if (window.location.port !== "5500" && window.location.protocol === "http:") {
+            window.location.replace("http://127.0.0.1:5500/report");
+        }
+        if (window.location.protocol === "file:") {
+            window.location.replace("http://127.0.0.1:5500/report");
+        }
+    </script>
+      
+    <title>Report an Emergency</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* Sleek very dark base so the white light stands out */
+            background: #060507 !important; 
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <style>
+
+
+        .client-container {
+            width: 95%;
+            margin: auto;
+            position: relative;
+            z-index: 5;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 30px;
+            background: rgba(13, 10, 15, 0.95);
+            overflow: hidden;
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(249, 212, 35, 0.2);
+            /* Multi-layered Intense Yellow Fire Glow (No moving lines) */
+            box-shadow: 
+                0 0 25px rgba(249, 212, 35, 0.4),
+                0 0 50px rgba(255, 204, 51, 0.2),
+                0 80px 150px rgba(0,0,0,0.9);
+            animation: fire-flicker 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes fire-flicker {
+            0% { 
+                box-shadow: 0 0 20px rgba(249, 212, 35, 0.4), 0 0 40px rgba(255, 204, 51, 0.2), 0 80px 150px rgba(0,0,0,0.9);
+                border-color: rgba(249, 212, 35, 0.1);
+            }
+            100% { 
+                box-shadow: 0 0 45px rgba(249, 212, 35, 0.7), 0 0 90px rgba(255, 204, 51, 0.4), 0 80px 150px rgba(0,0,0,0.9);
+                border-color: rgba(249, 212, 35, 0.4);
+            }
+        }
+
+        /* Narrow state for Login */
+        .client-container.login-mode {
+            max-width: 450px;
+            padding: 50px 40px;
+        }
+
+        /* Wide state for Dashboard */
+        .client-container.dashboard-mode {
+            max-width: 1150px;
+            padding: 0;
+        }
+
+        /* Top Navigation Header */
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 25px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .portal-layout {
+            display: flex;
+            flex-direction: row;
+            min-height: 550px;
+        }
+
+        .form-side {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .map-side {
+            flex: 1.2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Focused Flare Line at the top */
+        .client-container::before {
+            content: "";
+            position: absolute;
+            top: -1px; 
+            left: 10%; 
+            right: 10%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.8), 0 0 50px rgba(255, 255, 255, 0.4);
+            z-index: 10;
+        }
+
+        /* Atmospheric Sunbeam / Skyline Glow */
+        .client-container::after {
+            content: "";
+            position: absolute;
+            top: -200px; 
+            left: -50%; 
+            right: -50%;
+            height: 600px;
+            /* Using a warmer white for a true "sunlight" feel */
+            background: radial-gradient(circle at 50% 0%, rgba(255, 245, 230, 0.22) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(60px);
+        }
+
+        h2 {
+            color: #fff;
+            text-align: center;
+            font-weight: 800;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.6rem;
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 20px rgba(255, 106, 0, 0.3);
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: rgba(240,236,232,0.45);
+            font-size: 0.88rem;
+            margin-bottom: 10px;
+        }
+
+        .client-form label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding-left: 2px;
+        }
+
+        .client-form input, .client-form select, .client-form textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 106, 0, 0.1);
+            color: #fff;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: vertical;
+        }
+
+        .client-form input:focus, .client-form select:focus, .client-form textarea:focus {
+            border-color: rgba(255, 106, 0, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 0 25px rgba(255, 106, 0, 0.15);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .client-form select option { background: #0c0c0f; }
+
+        .location-btn {
+            background: rgba(255, 106, 0, 0.08);
+            color: #ff9f43;
+            border: 1px solid rgba(255, 106, 0, 0.3);
+            cursor: pointer;
+            padding: 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            border-radius: 9px;
+            width: 100%;
+            transition: all 0.25s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .location-btn:hover {
+            background: rgba(255, 106, 0, 0.18);
+            box-shadow: 0 0 20px rgba(255, 100, 20, 0.2);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #ff4e50, #f9d423);
+            color: #000;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 800;
+            margin-top: 30px;
+            padding: 18px;
+            width: 100%;
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(255, 78, 80, 0.4);
+            font-family: inherit;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(255, 78, 80, 0.6);
+            filter: brightness(1.1);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            background: rgba(255, 80, 0, 0.15);
+            color: rgba(255,255,255,0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(240,236,232,0.4);
+        }
+
+        #resStatus {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.92rem;
+            font-weight: bold;
+        }
+
+        #map {
+            width: 100%;
+            height: 550px; /* Force explicit height for Leaflet visibility */
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 1;
+            filter: none;
+        }
+
+        .leaflet-container {
+            background: #0d0a0f !important;
+            font-family: inherit;
+        }
+
+        /* User Info Bubble - Minimalist version */
+        .user-nav-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 8px 18px;
+            border-radius: 999px;
+            transition: all 0.3s ease;
+        }
+
+        .user-nav-pill:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="client-container {% if session.get('user') %}dashboard-mode{% else %}login-mode{% endif %}">
+        {% if not session.get('user') %}
+            <!-- Exact Screenshot Replication for Login -->
+            <div style="text-align: left; padding: 10px;">
+                <h2 style="font-size: 2rem; margin-bottom: 8px; font-weight: 800; color: #fff;">Emergency Portal</h2>
+                <p style="color: rgba(255,255,255,0.5); margin-bottom: 35px; font-size: 1rem; line-height: 1.4;">
+                    Every second counts. Enter your email to instantly access the reporting map.
+                </p>
+                
+                <form action="/login/local" method="POST" style="width: 100%;">
+                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 10px; font-weight: 600;">Email address</label>
+                    <input type="email" name="email" required placeholder="you@domain.com" style="width: 100%; margin-bottom: 15px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 16px; border-radius: 12px; color: #fff; outline: none;">
+                    
+                    <div style="color: #ff8c6b; font-size: 0.85rem; margin-bottom: 25px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-lock"></i> No password required for identity verification.
+                    </div>
+
+                    <button type="submit" class="submit-btn" style="width: 100%; padding: 18px; border-radius: 12px; background: linear-gradient(90deg, #f9d423 0%, #ff4e50 100%); color: #fff; font-weight: 800; font-size: 1.1rem; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(249, 212, 35, 0.2);">
+                        Proceed to Map &nbsp; <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div style="margin: 25px 0; text-align: center; position: relative;">
+                    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0d0a0f; padding: 0 15px; color: rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 800;">OR</span>
+                </div>
+
+                <a href="/login" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; text-decoration: none; font-weight: 600; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" style="width: 18px;" alt="Google Logo"> 
+                    1-Click Google Sign In
+                </a>
+            </div>
+        {% else %}
+            <!-- Independent Dashboard View (Wide Side-by-Side Style) -->
+            <div class="portal-header">
+                <h2 style="margin: 0; font-size: 1.3rem;"><i class="fa-solid fa-fire-shield" style="color: #ff4e50;"></i> FireSafe Portal</h2>
+                
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="user-nav-pill">
+                        <img src="{{ session['user']['picture'] }}" alt="Profile" style="width: 24px; height: 24px; border-radius: 50%;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #fff;">{{ session['user']['email'] }}</span>
+                    </div>
+                    <a href="/logout" style="color: #ff4e50; font-size: 1.1rem; opacity: 0.6; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="portal-layout">
+                <div class="form-side">
+                    <form id="reportForm" class="client-form" style="display: flex; flex-direction: column; gap: 5px;">
+                        <label>Emergency Description</label>
+                        <textarea id="desc" rows="4" required placeholder="Describe the emergency situation clearly..."></textarea>
+
+                        <label>Severity Level</label>
+                        <select id="severity">
+                            <option value="medium" style="color: #ff9f43; background: #0d0a0f;">🟠 Medium Hazard</option>
+                            <option value="high" style="color: #ff4e50; background: #0d0a0f;">🔴 High Danger</option>
+                            <option value="critical" style="color: #ff0000; background: #0d0a0f; font-weight: bold;">🚨 Critical Threat</option>
+                        </select>
+
+                        <button type="button" class="location-btn" id="locBtn" style="margin-top: 15px;">
+                            <i class="fa-solid fa-crosshairs"></i> Detect GPS Location
+                        </button>
+                        <div class="status" id="locStatus">Click on the map or use GPS...</div>
+
+                        <input type="hidden" id="lat">
+                        <input type="hidden" id="lng">
+                        <input type="hidden" id="reporterName" value="{{ session['user']['name'] }}">
+                        <input type="hidden" id="reporterEmail" value="{{ session['user']['email'] }}">
+
+                        <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                            <i class="fa-solid fa-paper-plane"></i> SUBMIT ALERT
+                        </button>
+                        <div id="resStatus"></div>
+                    </form>
+                </div>
+
+                <div class="map-side">
+                    <div id="map"></div>
+                    <p style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.75rem; margin-top: 15px; letter-spacing: 0.5px;">
+                        <i class="fa-solid fa-earth-africa"></i> Live Emergency Map Interface
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    </div>
+
+    <!-- Script imports -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        const locBtn = document.getElementById("locBtn");
+        const locStatus = document.getElementById("locStatus");
+        const latInput = document.getElementById("lat");
+        const lngInput = document.getElementById("lng");
+        const submitBtn = document.getElementById("submitBtn");
+        const reportForm = document.getElementById("reportForm");
+        const resStatus = document.getElementById("resStatus");
+
+        // Initialize Map with a beautiful Dark Grey theme (Alidade Smooth Dark)
+        const map = L.map("map").setView([36.166, 1.333], 12);
+        L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png", {   
+            maxZoom: 20,
+            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+        }).addTo(map);
+
+        let marker;
+
+        // Function to update location visually and internally
+        function setLocation(lat, lng) {
+            latInput.value = lat;
+            lngInput.value = lng;
+            locStatus.textContent = `Location selected: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            submitBtn.disabled = false;
+
+            if (marker) {
+                marker.setLatLng([lat, lng]);
+            } else {
+                marker = L.marker([lat, lng]).addTo(map);
+            }
+            map.setView([lat, lng], 14);
+        }
+
+        // Map Click Event
+        map.on("click", function(e) {
+            setLocation(e.latlng.lat, e.latlng.lng);
+        });
+
+        // GPS Button Event
+        locBtn.addEventListener("click", () => {
+            locStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting GPS Location...';
+            if (!navigator.geolocation) {
+                fallbackLocation();
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setLocation(pos.coords.latitude, pos.coords.longitude);   
+                },
+                (err) => {
+                    fallbackLocation();
+                },
+                { enableHighAccuracy: true }
+            );
+        });
+
+        function fallbackLocation() {
+            setLocation(36.166, 1.333);
+            locStatus.textContent = "Location access denied. Using default Chlef center.";
+        }
+
+        reportForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            resStatus.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending alert...';
+
+            const payload = {
+                title: "Citizen Report",
+                description: document.getElementById("desc").value,
+                severity: document.getElementById("severity").value,
+                lat: parseFloat(latInput.value),
+                lng: parseFloat(lngInput.value),
+            };
+
+            const reporterNameEl = document.getElementById("reporterName");
+            const reporterEmailEl = document.getElementById("reporterEmail");
+            if (reporterNameEl && reporterEmailEl) {
+                payload.reporter_name = reporterNameEl.value;
+                payload.reporter_email = reporterEmailEl.value;
+            }
+
+            try {
+                const res = await fetch("/api/alerts", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    resStatus.style.color = "var(--electric-blue)"; // Neon blue for success
+                    resStatus.innerHTML = '<i class="fa-solid fa-circle-check"></i> Report sent successfully! Control center notified.';
+                    reportForm.reset();
+                    submitBtn.disabled = true;
+                    locStatus.textContent = "Tap on the map or use GPS to set location...";
+                    if(marker) { map.removeLayer(marker); marker = null; }    
+                } else {
+                    resStatus.style.color = "var(--crimson)"; // Red for error
+                    resStatus.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error sending. Please try again.';
+                }
+            } catch (err) {
+                resStatus.style.color = "var(--crimson)";
+                resStatus.innerHTML = '<i class="fa-solid fa-wifi"></i> Network error. Please try again.';   
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/fire_particles.js') }}"></script>
+</body>
+</html>
