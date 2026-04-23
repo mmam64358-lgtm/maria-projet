@@ -1,59 +1,71 @@
-# maria projet - FireSafe AI Tactical Dashboard 🚒⚡
+# Multi-Objective Optimization for Firefighting Under Domino Effects (maria projet) 🚒⚡
 
-**maria projet** is a sophisticated Emergency Decision Support System (DSS) designed for the Chlef region. It leverages AI-driven dispatch algorithms and real-time GIS mapping to optimize response times and resource allocation during critical fire incidents.
+**maria projet** is a sophisticated Intelligent Decision Support System (DSS) developed for the Chlef region. It addresses the critical multi-objective optimization challenge of firefighting resource allocation, particularly in scenarios involving **domino effects** and cascade failures across interconnected zones.
 
-## 🚀 Key Features
+## 🔬 Scientific Abstract
 
-- **Tactical Mission Center**: Real-time dashboard for firemen with pulsing emergency alerts and tactical audio notifications.
-- **AI Optimization Hub**: Advanced dispatching using **Genetic Algorithms (GA)** and **Hybrid PSO-GWO** to find the most efficient resource allocation.
-- **Intelligent Alert Handling**: 
-    - **Duplicate Detection**: Identifies nearby reports to prevent redundant dispatches.
-    - **Domino Risk Analysis**: Evaluates potential fire spread to sensitive areas.
-- **Dynamic GIS Mapping**: Integrated Leaflet.js maps with multi-layer tactical data (Units, Incidents, Water Sources, Risk Zones).
-- **Security Directory**: Role-based access control (Admin, Agent, Citizen) with secure session management.
+Efficient allocation of firefighting resources is a complex problem involving conflicting objectives: **Cost Minimization**, **Response Time Optimization**, and **Fire Containment Effectiveness**. This project implements and evaluates advanced metaheuristic approaches—Genetic Algorithms (GA) and a novel Hybrid Particle Swarm Optimization-Grey Wolf Optimizer (PSO-GWO)—to provide real-time, near-optimal deployment strategies in high-pressure emergency scenarios.
 
-## 🛠️ Tech Stack
+---
 
-- **Backend**: Python / Flask
-- **Database**: **PostgreSQL** (High-performance relational storage)
-- **Frontend**: ES6+ JavaScript, Vanilla CSS3 (Premium Glassmorphism), Leaflet.js
-- **Charts**: Chart.js for real-time mission telemetry
+## 🤖 Optimization Metaheuristics
 
-## 📦 Installation & Setup
+### 1. Genetic Algorithm (GA / NSGA-II Inspired)
+The system evolves a population of potential dispatch plans using evolutionary operators:
+- **Two-Point Crossover**: Preserves contiguous zone-resource blocks to maintain coherent sub-plans.
+- **Uniform Integer Mutation**: Enables global exploration and prevents premature convergence into local optima.
+- **Elitist Selection**: Ensures that the highest-quality non-dominated solutions are preserved across generations.
+- **Objective**: Finds a Pareto-optimal front balancing operational expenditure against risk mitigation.
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/mmam64358-lgtm/maria-projet.git
-   cd maria-projet
-   ```
+### 2. Hybrid PSO-GWO Algorithm
+A high-performance hybrid model combining the strengths of two swarm-based paradigms:
+- **PSO Component**: Leverages velocity-based momentum and global communication to explore the search space.
+- **GWO Component**: Implements a hierarchical leadership structure (Alpha, Beta, Delta wolves) for refined local exploitation.
+- **Synergy**: PSO provides the exploration breadth while GWO ensures rapid convergence (typically within 10-15 iterations), making it ideal for real-time operational response.
 
-2. **Set up virtual environment**:
-   ```bash
+### 3. Domino Effect Modeling & Cascade Propagation
+The system explicitly models the temporal dynamics of fire spread:
+- **Threshold-Based Ignition**: If a fire is not contained within a specific time window ($\Delta z$), it triggers a cascade to adjacent zones.
+- **Adjacency Logic**: Uses Haversine-based spatial analysis to define neighbors ($N(z)$) and propagate fire start times ($t_{start}$) across the network.
+
+---
+
+## 🔐 System Architecture & Security
+
+- **Backend**: Flask-powered API handling complex mathematical formulations.
+- **Database**: **PostgreSQL** for high-integrity tactical data storage and role claims.
+- **Security**: Environment isolation using `.env` for credentials and server-side RBAC (Role-Based Access Control) to protect sensitive command interfaces.
+- **GIS Integration**: Leaflet.js engine for real-time spatial visualization of incident propagation and unit telemetry.
+
+---
+
+## 📦 Technical Setup & Execution
+
+1. **Environment Initialization**:
+   ```powershell
    python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   .venv\Scripts\activate
+   pip install -r requirements.txt
    ```
 
-3. **Database Configuration**:
-   Ensure PostgreSQL is running and update your credentials in the `.env` file:
-   `DATABASE_URL=dbname=memoire_db user=postgres password=YOUR_PASSWORD host=localhost`
-
-4. **Initialize System**:
-   ```bash
-   python final_db_seed.py
+2. **Strategic Database Seeding**:
+   ```powershell
+   python final_db_seed.py  # Populates the PostgreSQL schema with tactical assets
    ```
 
-5. **Run the Application**:
-   ```bash
+3. **Engine Launch**:
+   ```powershell
    python app.py
    ```
 
-## 🔒 Security & Best Practices
+---
 
-The system is built with professional security standards to ensure tactical data integrity:
-- **Environment Isolation**: Sensitive credentials (PostgreSQL passwords, API keys) are strictly isolated in a `.env` file and excluded from version control via `.gitignore`.
-- **Role-Based Security**: Access to Admin and Fireman dashboards is protected by strict server-side role validation.
-- **Session Protection**: Flask sessions are cryptographically signed using a unique secret key to prevent session hijacking.
-- **Data Integrity**: All PostgreSQL queries use parameterized inputs to protect against SQL injection.
+## 📊 Performance Analytics
+The **Optimization Hub** provides:
+- **Convergence Tracking**: Monitoring how fast the hybrid solver reaches a stable solution.
+- **Performance Radar**: Visualizing the trade-offs between Cost, Time, Safety, and Reliability.
+- **Tactical Logs**: Detailed execution traces of the AI decision-making process.
 
 ---
-**Developed by mmam64358-lgtm**
+**Developed for Academic Research & Emergency Response Practice**
+**Maintained by mmam64358-lgtm**
