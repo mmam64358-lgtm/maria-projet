@@ -1,64 +1,72 @@
-# maria projet - FireSafe AI Tactical Dashboard
+# maria projet - FireSafe AI Tactical Dashboard 🚒⚡
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-[![Flask](https://img.shields.io/badge/flask-v2.0+-green.svg)](https://flask.palletsprojects.com/)
+**maria projet** is an advanced Emergency Decision Support System (DSS) designed to optimize fire response coordination in the Chlef region. It integrates real-time GIS mapping with cutting-edge Metaheuristic Optimization algorithms to minimize response times and maximize resource efficiency.
 
-**maria projet** is a sophisticated Fire & Emergency Management System designed for tactical coordination and citizen reporting. It leverages AI-driven dispatch algorithms and real-time GIS mapping to optimize response times and resource allocation during critical fire incidents.
+## 🌟 Project Core Logic (Architectural Overview)
 
-## 🚀 Key Features
+The system operates on a tri-portal architecture designed for seamless coordination between the public and emergency services:
 
-- **Tactical Mission Center**: Real-time dashboard for firemen with pulsing emergency alerts and audio notifications.
-- **Citizen Reporting Portal**: Simplified gateway for public emergency reports with precise GPS targeting.
-- **Admin Control Center**: Comprehensive hub for unit deployment, incident logging, and system analysis.
-- **AI Optimization Hub**: Advanced algorithms (Genetic Algorithm & Hybrid PSO-GWO) for optimal resource routing.
-- **Dynamic GIS Mapping**: Integrated Leaflet.js maps with multi-layer tactical data (Units, Incidents, Water Sources, Risk Zones).
-- **Security Directory**: Role-based access control (Admin, Agent, Citizen) with secure authentication.
+### 1. Incident Acquisition (Citizen Portal)
+- **Geographic Reporting**: Citizens can pin precise fire locations on an interactive Leaflet map.
+- **Risk Assessment**: Data such as fire severity and affected area are captured to feed the optimization engine.
 
-## 🛠️ Tech Stack
+### 2. Intelligent Dispatch Engine (The AI Core)
+Once an incident is reported, the system executes one of two optimization models to assign resources:
+- **Genetic Algorithm (GA)**: Evolves a population of potential dispatch solutions to find the one with the lowest "Cost Function" (Time + Resource Exhaustion).
+- **Hybrid PSO-GWO (Particle Swarm & Grey Wolf Optimization)**: A high-performance hybrid model that balances exploration and exploitation to find near-optimal dispatch units in milliseconds, even for complex multi-unit scenarios.
 
-- **Backend**: Python / Flask
-- **Frontend**: HTML5, Vanilla CSS3 (Premium Glassmorphism), Javascript (ES6+)
-- **Database**: SQLite3 (Scalable for production)
-- **Mapping**: Leaflet.js / OpenStreetMap
-- **Charts**: Chart.js for mission telemetry
-- **Icons**: FontAwesome 6
+### 3. Tactical Response (Fireman Terminal)
+- **Live Mission Feed**: Firemen receive instant tactical dispatches with audio-visual alerts (Tactical Beeps & Pulsing UI).
+- **Status Synchronization**: Field agents update mission status (Arrived -> Extinguished) in real-time, which updates the global resource availability.
 
-## 📦 Installation & Setup
+---
 
-1. **Clone the repository**:
+## 🛠️ Technical Stack
+
+- **Backend**: Python 3.9+ / Flask Framework
+- **Database**: **PostgreSQL** (Managed via `psycopg2` with an optimized connection wrapper).
+- **Frontend**: 
+  - **Styles**: Premium Dark-themed Glassmorphism (Vanilla CSS3).
+  - **Logic**: ES6 JavaScript with Real-time Polling.
+  - **Maps**: Leaflet.js with OSM integration.
+  - **Charts**: Chart.js for mission telemetry.
+- **Auth**: Secure OAuth2 / Google Integration for identity management.
+
+---
+
+## 💾 Database Configuration (PostgreSQL)
+
+The system is configured to connect to a PostgreSQL database. 
+- **Default Connection String**: `dbname=memoire_db user=postgres password=maria123 host=localhost`
+- **Configuration**: Managed via the `.env` file under the `DATABASE_URL` variable.
+
+## 🚀 Installation & Deployment
+
+1. **Clone & Setup**:
    ```bash
-   git clone https://github.com/your-username/maria-projet.git
+   git clone https://github.com/mmam64358-lgtm/maria-projet.git
    cd maria-projet
-   ```
-
-2. **Set up virtual environment**:
-   ```bash
    python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. **Install dependencies**:
-   ```bash
    pip install -r requirements.txt
    ```
 
-4. **Initialize Database**:
+2. **Database Migration**:
    ```bash
-   python add_units.py  # Seed initial units and equipment
+   python final_db_seed.py  # Seeds the PostgreSQL tables and initial data
    ```
 
-5. **Run the Application**:
+3. **Launch**:
    ```bash
    python app.py
    ```
 
-## 📸 Screenshots
+---
 
-*(Add your tactical dashboard screenshots here)*
-
-## 🎓 Academic Thesis
-This project was developed as part of a Master's Thesis focusing on AI-integrated emergency response systems.
+## 🎯 Optimization Metrics
+The project tracks and visualizes:
+- **ETA (Estimated Time of Arrival)** optimization.
+- **Resource Depletion Ratios** across 10+ Chlef fire stations.
+- **Algorithm Convergence** (GA vs. PSO-GWO performance tracking).
 
 ---
-**Developed by Hamza Zourkane**
+**Maintained by mmam64358-lgtm**
