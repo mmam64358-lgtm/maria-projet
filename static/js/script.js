@@ -38,6 +38,9 @@ const tileLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.pn
     maxZoom: 19
 }).addTo(map);
 
+const osmLayer = tileLayer;
+const darkLayer = tileLayer; // Keep it the same to satisfy any other references
+
 const unitLayer = L.layerGroup().addTo(map);
 const alertLayer = L.layerGroup().addTo(map);
 const actionLayer = L.layerGroup().addTo(map);
@@ -478,23 +481,25 @@ function renderReportsTable() {
     if (!tbody) return;
 
     const rows = state.alerts.map((alert) => {
-        const description = alert.description ? String(alert.description) : "-";
-        const shortDesc = description.length > 40 ? `${description.slice(0, 40)}...` : description;
+        const time = alert.created_at ? new Date(alert.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--";
+        const coords = `${Number(alert.lat).toFixed(4)}, ${Number(alert.lng).toFixed(4)}`;
+        const status = (alert.status || "Active").toUpperCase();
+        const severity = (alert.severity || "MEDIUM").toUpperCase();
+        
         return `
             <tr>
-                <td>#${alert.id}</td>
-                <td>${Number(alert.lat).toFixed(6)}</td>
-                <td>${Number(alert.lng).toFixed(6)}</td>
-                <td title="${alert.title}">${alert.title || (alert.zone_name || "N/A")}</td>
-                <td style="color:${severityColor(alert.severity)}; font-weight:700;">${String(alert.severity || "-").toUpperCase()}</td>
-                <td title="${description}">${alert.status || "-"} • ${shortDesc}</td>
+                <td style="padding:15px; font-weight:bold; color:var(--electric-blue);">#${alert.id}</td>
+                <td style="padding:15px; font-family:'JetBrains Mono', monospace; font-size:0.85rem; color:rgba(255,255,255,0.5);">${time}</td>
+                <td style="padding:15px; font-family:monospace; font-size:0.8rem; color:rgba(255,255,255,0.7);">${coords}</td>
+                <td style="padding:15px;"><span style="color:${severityColor(alert.severity)}; font-weight:800; font-size:0.75rem; letter-spacing:1px; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:4px;">${severity}</span></td>
+                <td style="padding:15px;"><span style="font-size:0.85rem; font-weight:600; color:${status === 'RESOLVED' ? '#4caf50' : '#ff9f43'};">${status}</span></td>
             </tr>
         `;
     });
 
     tbody.innerHTML = rows.length
         ? rows.join("")
-        : `<tr><td colspan="6" style="padding:12px;">No incidents found</td></tr>`;
+        : `<tr><td colspan="5" style="padding:30px; text-align:center; color:rgba(255,255,255,0.2);">No mission history detected</td></tr>`;
 }
 
 function renderEstimatesTable() {
@@ -1112,6 +1117,7 @@ async function refreshData() {
     if (state.currentMode === "dashboard") {
         renderLiveInventory();
         updateCharts();
+        renderTacticalMissions();
     }
 }
 
@@ -1125,6 +1131,114 @@ async function loadZoneBoundaries() {
     } catch (_error) {
     }
 }
+
+function playTacticalAlert() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note
+        oscillator.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.5);
+
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.warn("Audio alert failed", e);
+    }
+}
+
+function renderTacticalMissions() {
+    const container = document.getElementById("active-mission-container");
+    const controls = document.getElementById("agent-controls");
+    if (!container) return;
+
+    const activeAlerts = state.alerts.filter(a => (a.status || "").toLowerCase() === "open" || (a.status || "").toLowerCase() === "active");
+    
+    if (activeAlerts.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:40px; text-align:center; color:rgba(255,255,255,0.2);">
+            <div style="font-size:3rem; margin-bottom:15px;">📡</div>
+            Scanning for emergency dispatches...
+        </div>`;
+        if (controls) controls.classList.add("hidden");
+        return;
+    }
+
+    const latest = activeAlerts[0]; // Most recent alert
+    const severity = (latest.severity || "medium").toUpperCase();
+    const time = latest.created_at ? new Date(latest.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "NOW";
+
+    container.innerHTML = `
+        <div class="mission-card pulsing-alert" style="border-left: 5px solid ${severityColor(latest.severity)};">
+            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:15px;">
+                <div>
+                    <span style="background:rgba(255,255,255,0.1); padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:800; letter-spacing:1px; color:#aaa;">MISSION #${latest.id}</span>
+                    <h2 style="margin:8px 0 0 0; font-size:1.4rem; color:#fff;">🔥 INCIDENT DETECTED</h2>
+                </div>
+                <span style="color:${severityColor(latest.severity)}; font-weight:900; font-size:0.8rem;">${severity}</span>
+            </div>
+            
+            <div style="background:rgba(0,0,0,0.2); padding:15px; border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.8rem; color:#888; margin-bottom:5px;">LOCATION COORDINATES</div>
+                <div style="font-family:'JetBrains Mono', monospace; font-size:1.1rem; color:var(--electric-blue);">${latest.lat.toFixed(4)}, ${latest.lng.toFixed(4)}</div>
+            </div>
+
+            <div class="mission-status-grid">
+                <div class="mission-stat">
+                    <h4>Reported</h4>
+                    <div class="val">${time}</div>
+                </div>
+                <div class="mission-stat">
+                    <h4>Distance</h4>
+                    <div class="val">-- km</div>
+                </div>
+            </div>
+            
+            <div style="font-size:0.85rem; color:rgba(255,255,255,0.6); line-height:1.4; background:rgba(255,255,255,0.03); padding:10px; border-radius:8px;">
+                <i class="fa-solid fa-info-circle" style="color:var(--primary); margin-right:8px;"></i>
+                ${latest.description || "Active tactical response required."}
+            </div>
+        </div>
+    `;
+
+    if (controls) {
+        controls.classList.remove("hidden");
+        const arrivedBtn = controls.querySelector(".btn-arrived");
+        const completeBtn = controls.querySelector(".btn-complete");
+        if (arrivedBtn) arrivedBtn.setAttribute("onclick", `updateMissionStatus(${latest.id}, 'arrived')`);
+        if (completeBtn) completeBtn.setAttribute("onclick", `updateMissionStatus(${latest.id}, 'resolved')`);
+    }
+}
+
+async function updateMissionStatus(id, newStatus) {
+    if (!id) return;
+    
+    showToast("Updating Mission", `Status: ${newStatus.toUpperCase()}`, "info");
+    
+    try {
+        const res = await fetchJSON(`/api/alerts/${id}/status`, {
+            method: "POST",
+            body: JSON.stringify({ status: newStatus })
+        });
+        
+        if (res.success) {
+            showToast("Mission Updated", `Alert #${id} marked as ${newStatus}`, "success");
+            await refreshData();
+        } else {
+            showToast("Update Failed", res.error || "Unknown error", "error");
+        }
+    } catch (err) {
+        showToast("Error", err.message, "error");
+    }
+}
+window.updateMissionStatus = updateMissionStatus;
 
 function renderNotificationsDropdown() {
     const dropdown = document.getElementById("notif-dropdown");
@@ -1227,6 +1341,7 @@ async function pollNotifications() {
         });
         state.notifications = state.notifications.slice(0, 30);
         renderNotificationsDropdown();
+        playTacticalAlert(); // Play sound when new notification arrives
         await refreshData();
     } catch (_error) {
     }
@@ -1257,9 +1372,10 @@ function bindEvents() {
         isDark = !isDark;
         document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
         themeBtn.textContent = isDark ? "🌙" : "☀️";
-        tileLayer.setUrl(isDark
-            ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+        
+        // Map stays white (OSM) regardless of theme
+        const mapContainer = document.getElementById('map');
+        mapContainer.style.filter = 'none';
     });
 
     compareBtn?.addEventListener("click", () => {

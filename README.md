@@ -1,92 +1,64 @@
-# projet-memoire
+# maria projet - FireSafe AI Tactical Dashboard
 
-## Installation et exécution du projet
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/flask-v2.0+-green.svg)](https://flask.palletsprojects.com/)
 
-Suivez ces étapes pour installer et exécuter le projet sur votre machine :
+**maria projet** is a sophisticated Fire & Emergency Management System designed for tactical coordination and citizen reporting. It leverages AI-driven dispatch algorithms and real-time GIS mapping to optimize response times and resource allocation during critical fire incidents.
 
-### 1. Cloner le dépôt
-```bash
-git clone https://github.com/mmam64358-lgtm/projet-memoire.git
-cd projet-memoire
-```
+## 🚀 Key Features
 
-### 2. Créer et activer un environnement virtuel (Windows)
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-```
+- **Tactical Mission Center**: Real-time dashboard for firemen with pulsing emergency alerts and audio notifications.
+- **Citizen Reporting Portal**: Simplified gateway for public emergency reports with precise GPS targeting.
+- **Admin Control Center**: Comprehensive hub for unit deployment, incident logging, and system analysis.
+- **AI Optimization Hub**: Advanced algorithms (Genetic Algorithm & Hybrid PSO-GWO) for optimal resource routing.
+- **Dynamic GIS Mapping**: Integrated Leaflet.js maps with multi-layer tactical data (Units, Incidents, Water Sources, Risk Zones).
+- **Security Directory**: Role-based access control (Admin, Agent, Citizen) with secure authentication.
 
-### 3. Installer les dépendances
-```bash
-pip install -r requirements.txt
-```
+## 🛠️ Tech Stack
 
-### 4. Lancer l'application
-```bash
-python app.py
-```
+- **Backend**: Python / Flask
+- **Frontend**: HTML5, Vanilla CSS3 (Premium Glassmorphism), Javascript (ES6+)
+- **Database**: SQLite3 (Scalable for production)
+- **Mapping**: Leaflet.js / OpenStreetMap
+- **Charts**: Chart.js for mission telemetry
+- **Icons**: FontAwesome 6
 
----
+## 📦 Installation & Setup
 
-**Remarques :**
-- Si le projet nécessite des fichiers de configuration (ex: `.env`), veuillez les créer et les remplir selon les instructions du projet.
-- Pour d'autres systèmes (Linux/Mac), l'activation de l'environnement virtuel se fait avec :
-	```bash
-	source .venv/bin/activate
-	```
-- Consultez le fichier `README.md` pour plus d'informations si besoin.
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/maria-projet.git
+   cd maria-projet
+   ```
 
-# كيفية تشغيل المشروع خطوة بخطوة
+2. **Set up virtual environment**:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-1. **تثبيت بايثون (Python)**
-   - يجب أن يكون Python 3.10 أو أحدث مثبت على جهازك.
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-2. **فتح التيرمينال في مجلد المشروع**
-   - مثال: إذا كان المشروع في مجلد التنزيلات (Downloads):
-     
-     افتح PowerShell أو CMD واكتب:
-     
-     """
-     cd "C:\Users\hamza zourkane\Downloads\projet-memoire-main\projet-memoire-main"
-     """
+4. **Initialize Database**:
+   ```bash
+   python add_units.py  # Seed initial units and equipment
+   ```
 
-3. **إنشاء وتفعيل البيئة الافتراضية (مرة واحدة فقط)**
-   - إنشاء البيئة:
-     
-     """
-     python -m venv .venv
-     """
-   - تفعيل البيئة:
-     - على PowerShell:
-       """
-       .venv\Scripts\Activate.ps1
-       """
-     - على CMD:
-       """
-       .venv\Scripts\activate.bat
-       """
-     - على Linux/macOS:
-       """
-       source .venv/bin/activate
-       """
+5. **Run the Application**:
+   ```bash
+   python app.py
+   ```
 
-4. **تثبيت جميع المكتبات المطلوبة**
-   - بعد تفعيل البيئة، ثبت المكتبات:
-     
-     """
-     pip install -r requirements.txt
-     """
+## 📸 Screenshots
 
-5. **تشغيل البرنامج**
-   - بعد تثبيت المكتبات، شغل التطبيق:
-     
-     """
-     python app.py
-     """
+*(Add your tactical dashboard screenshots here)*
+
+## 🎓 Academic Thesis
+This project was developed as part of a Master's Thesis focusing on AI-integrated emergency response systems.
 
 ---
-
-**ملاحظات مهمة:**
-- يجب تفعيل البيئة الافتراضية كل مرة تفتح فيها التيرمينال قبل تشغيل البرنامج.
-- إذا ظهرت رسالة خطأ عن مكتبة ناقصة، ثبتها بـ pip install اسم_المكتبة.
-- إذا واجهت أي مشكل، انسخ رسالة الخطأ وأرسلها للمطور.
+**Developed by Hamza Zourkane**

@@ -72,7 +72,7 @@
             <header class="top-bar-premium">
                 <div class="search-container-modern">
                     <span class="search-icon-modern">🔍</span>
-                    <input type="text" placeholder="Search" id="search-input-modern">
+                    <input type="text" placeholder="Search for unit, incident, or place..." id="search-input">
                     <span class="search-shortcut">⌘ + Space</span>
                 </div>
 
@@ -96,7 +96,8 @@
                         </div>
                     </div>
                     <button id="theme-toggle" class="action-circle" title="Toggle Dark/Light Mode">🌙</button>
-                    <button id="view-toggle" class="action-circle" onclick="toggleMapView()" title="Toggle Map/Panels Focus">↕️</button>
+                    <button id="view-toggle" class="action-circle" onclick="toggleMapView()"
+                        title="Toggle Map/Panels Focus">↕️</button>
 
                     <div class="user-profile-premium">
                         <img src="{{ user.picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
@@ -335,10 +336,8 @@
                                 <tr style="background: rgba(255,255,255,0.03);">
                                     <th style="padding:15px; color:var(--primary);">ID</th>
                                     <th style="padding:15px; color:var(--primary);">LOCATION</th>
-                                    <th style="padding:15px; color:var(--primary);">TYPE</th>
                                     <th style="padding:15px; color:var(--primary);">SEVERITY</th>
                                     <th style="padding:15px; color:var(--primary);">STATUS</th>
-                                    <th style="padding:15px; color:var(--primary);">REPORTER</th>
                                 </tr>
                             </thead>
                             <tbody id="reports-table-body"></tbody>

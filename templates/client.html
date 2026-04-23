@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Report an Emergency - FireSafe Portal</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background: #060507 !important; 
+            background: #060507 !important;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -20,12 +21,12 @@
             font-family: 'Inter', sans-serif;
         }
     </style>
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    
+
     <style>
         .client-container {
             width: 95%;
@@ -38,10 +39,10 @@
             overflow: hidden;
             backdrop-filter: blur(40px);
             border: 1px solid rgba(249, 212, 35, 0.2);
-            box-shadow: 
+            box-shadow:
                 0 0 20px rgba(249, 212, 35, 0.3),
                 0 0 40px rgba(255, 204, 51, 0.15),
-                0 60px 120px rgba(0,0,0,0.8);
+                0 60px 120px rgba(0, 0, 0, 0.8);
             animation: fire-flicker-container 1.2s ease-in-out infinite alternate;
         }
 
@@ -49,8 +50,8 @@
         .client-container::before {
             content: "";
             position: absolute;
-            top: -1px; 
-            left: 10%; 
+            top: -1px;
+            left: 10%;
             right: 10%;
             height: 2px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
@@ -62,8 +63,8 @@
         .client-container::after {
             content: "";
             position: absolute;
-            top: -200px; 
-            left: -50%; 
+            top: -200px;
+            left: -50%;
             right: -50%;
             height: 600px;
             background: radial-gradient(circle at 50% 0%, rgba(255, 245, 230, 0.22) 0%, transparent 70%);
@@ -73,12 +74,13 @@
         }
 
         @keyframes fire-flicker-container {
-            0% { 
-                box-shadow: 0 0 20px rgba(249, 212, 35, 0.4), 0 0 40px rgba(255, 204, 51, 0.2), 0 80px 150px rgba(0,0,0,0.9);
+            0% {
+                box-shadow: 0 0 20px rgba(249, 212, 35, 0.4), 0 0 40px rgba(255, 204, 51, 0.2), 0 80px 150px rgba(0, 0, 0, 0.9);
                 border-color: rgba(249, 212, 35, 0.1);
             }
-            100% { 
-                box-shadow: 0 0 45px rgba(249, 212, 35, 0.7), 0 0 90px rgba(255, 204, 51, 0.4), 0 80px 150px rgba(0,0,0,0.9);
+
+            100% {
+                box-shadow: 0 0 45px rgba(249, 212, 35, 0.7), 0 0 90px rgba(255, 204, 51, 0.4), 0 80px 150px rgba(0, 0, 0, 0.9);
                 border-color: rgba(249, 212, 35, 0.4);
             }
         }
@@ -97,7 +99,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 30px;
+            padding: 10px 25px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             background: rgba(255, 255, 255, 0.02);
         }
@@ -105,15 +107,15 @@
         .portal-layout {
             display: flex;
             flex-direction: row;
-            min-height: 550px;
+            min-height: 480px;
         }
 
         .form-side {
             flex: 1;
-            padding: 25px 30px;
+            padding: 15px 25px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -147,7 +149,9 @@
             letter-spacing: 1.2px;
         }
 
-        .client-form input, .client-form select, .client-form textarea {
+        .client-form input,
+        .client-form select,
+        .client-form textarea {
             width: 100%;
             background: rgba(0, 0, 0, 0.45);
             border: 1px solid rgba(255, 106, 0, 0.1);
@@ -160,7 +164,9 @@
             transition: 0.3s;
         }
 
-        .client-form input:focus, .client-form select:focus, .client-form textarea:focus {
+        .client-form input:focus,
+        .client-form select:focus,
+        .client-form textarea:focus {
             border-color: rgba(255, 106, 0, 0.6);
             background: rgba(0, 0, 0, 0.6);
             outline: none;
@@ -216,7 +222,7 @@
 
         #map {
             width: 100%;
-            height: 480px;
+            height: 400px;
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -233,100 +239,132 @@
 
         /* Standard fire animations */
         @keyframes fire-flicker {
-            0% { transform: scale(1) translateY(0); }
-            100% { transform: scale(1.1) translateY(-3px); }
+            0% {
+                transform: scale(1) translateY(0);
+            }
+
+            100% {
+                transform: scale(1.1) translateY(-3px);
+            }
         }
+
         @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.3; }
-            50% { transform: scale(1.4); opacity: 0.6; }
-            100% { transform: scale(0.8); opacity: 0.3; }
+            0% {
+                transform: scale(0.8);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1.4);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(0.8);
+                opacity: 0.3;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="client-container {% if session.get('user') %}dashboard-mode{% else %}login-mode{% endif %}">
         {% if not session.get('user') %}
-            <!-- Login Mode (Image 3) -->
-            <div style="text-align: left; padding: 10px;">
-                <h2 style="font-size: 2.2rem; margin-bottom: 12px; font-weight: 800; color: #fff;">Emergency Portal</h2>
-                <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px; font-size: 1.05rem; line-height: 1.5;">
-                    Every second counts. Enter your email to instantly access the reporting map and tactical hub.
-                </p>
-                
-                <form action="/login/local" method="POST" style="width: 100%;">
-                    <label style="display: block; color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">Email address</label>
-                    <input type="email" name="email" required placeholder="you@domain.com" style="width: 100%; margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 14px; color: #fff; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='rgba(255,106,0,0.5)'">
-                    
-                    <div style="color: #ff8c6b; font-size: 0.88rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; opacity: 0.8;">
-                        <i class="fa-solid fa-shield-halved"></i> No password required for identity verification.
-                    </div>
+        <!-- Login Mode (Image 3) -->
+        <div style="text-align: left; padding: 10px;">
+            <h2 style="font-size: 2.2rem; margin-bottom: 12px; font-weight: 800; color: #fff;">Emergency Portal</h2>
+            <p style="color: rgba(255,255,255,0.5); margin-bottom: 40px; font-size: 1.05rem; line-height: 1.5;">
+                Every second counts. Enter your email to instantly access the reporting map and tactical hub.
+            </p>
 
-                    <button type="submit" class="submit-btn" style="box-shadow: 0 15px 40px rgba(249, 212, 35, 0.25);">
-                        Proceed to Map &nbsp; <i class="fa-solid fa-satellite-dish"></i>
-                    </button>
-                </form>
+            <form action="/login/local" method="POST" style="width: 100%;">
+                <label
+                    style="display: block; color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 10px; font-weight: 700; text-transform: uppercase;">Email
+                    address</label>
+                <input type="email" name="email" required placeholder="you@domain.com"
+                    style="width: 100%; margin-bottom: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 14px; color: #fff; outline: none; transition: 0.3s;"
+                    onfocus="this.style.borderColor='rgba(255,106,0,0.5)'">
 
-                <div style="margin: 30px 0; text-align: center; position: relative;">
-                    <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05);">
-                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0d0a0f; padding: 0 20px; color: rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 900; letter-spacing: 2px;">SECURE GATEWAY</span>
+                <div
+                    style="color: #ff8c6b; font-size: 0.88rem; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; opacity: 0.8;">
+                    <i class="fa-solid fa-shield-halved"></i> No password required for identity verification.
                 </div>
 
-                <a href="/login" style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.2)';" onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.1)';">
-                    <img src="https://developers.google.com/identity/images/g-logo.png" style="width: 20px;" alt="Google Logo"> 
-                    1-Click Google Sign In
+                <button type="submit" class="submit-btn" style="box-shadow: 0 15px 40px rgba(249, 212, 35, 0.25);">
+                    Proceed to Map &nbsp; <i class="fa-solid fa-satellite-dish"></i>
+                </button>
+            </form>
+
+            <div style="margin: 30px 0; text-align: center; position: relative;">
+                <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.05);">
+                <span
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #0d0a0f; padding: 0 20px; color: rgba(255,255,255,0.2); font-size: 0.75rem; font-weight: 900; letter-spacing: 2px;">SECURE
+                    GATEWAY</span>
+            </div>
+
+            <a href="/login"
+                style="display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #fff; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: 0.3s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.borderColor='rgba(255,255,255,0.2)';"
+                onmouseout="this.style.background='transparent'; this.style.borderColor='rgba(255,255,255,0.1)';">
+                <img src="https://developers.google.com/identity/images/g-logo.png" style="width: 20px;"
+                    alt="Google Logo">
+                1-Click Google Sign In
+            </a>
+        </div>
+        {% else %}
+        <!-- Portal Mode (Image 4) -->
+        <div class="portal-header">
+            <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800;"><i class="fa-solid fa-fire-shield"
+                    style="color: #ff4e50;"></i> FireSafe Portal</h2>
+
+            <div style="display: flex; align-items: center; gap: 18px;">
+                <a href="/logout" style="color: #ff4e50; font-size: 1.2rem; opacity: 0.7; transition: 0.3s;"
+                    onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                    <i class="fa-solid fa-power-off"></i>
                 </a>
             </div>
-        {% else %}
-            <!-- Portal Mode (Image 4) -->
-            <div class="portal-header">
-                <h2 style="margin: 0; font-size: 1.4rem; font-weight: 800;"><i class="fa-solid fa-fire-shield" style="color: #ff4e50;"></i> FireSafe Portal</h2>
-                
-                <div style="display: flex; align-items: center; gap: 18px;">
-                    <div class="user-nav-pill">
-                        <img src="{{ session['user']['picture'] or 'https://cdn-icons-png.flaticon.com/512/1077/1077114.png' }}" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #ff9f43;">
-                        <span style="font-size: 0.9rem; font-weight: 700; color: #fff;">{{ session['user']['email'] }}</span>
+        </div>
+
+        <div class="portal-layout">
+            <div class="form-side">
+                <form id="reportForm" class="client-form" style="display: flex; flex-direction: column; gap: 5px;">
+                    <label>Mission Description</label>
+                    <textarea id="desc" rows="4" required
+                        placeholder="Describe the thermal intensity and situation..."></textarea>
+
+                    <label>Severity Level</label>
+                    <select id="severity">
+                        <option value="medium">🟠 Medium Hazard</option>
+                        <option value="high">🔴 High Danger</option>
+                        <option value="critical">🚨 Critical Threat</option>
+                    </select>
+
+                    <button type="button" class="location-btn" id="locBtn" style="margin-top: 15px;">
+                        <i class="fa-solid fa-location-crosshairs"></i> Detect GPS Location
+                    </button>
+                    <div class="status" id="locStatus"
+                        style="font-size: 0.75rem; opacity: 0.6; font-family: monospace;">[ CLICK MAP TO SELECT TARGET ]
                     </div>
-                    <a href="/logout" style="color: #ff4e50; font-size: 1.2rem; opacity: 0.7; transition: 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-                        <i class="fa-solid fa-power-off"></i>
-                    </a>
-                </div>
+
+                    <input type="hidden" id="lat">
+                    <input type="hidden" id="lng">
+
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        <i class="fa-solid fa-satellite"></i> SUBMIT MISSION
+                    </button>
+                    <div id="resStatus"
+                        style="text-align: center; margin-top: 15px; font-weight: 700; font-size: 0.85rem;"></div>
+                </form>
             </div>
 
-            <div class="portal-layout">
-                <div class="form-side">
-                    <form id="reportForm" class="client-form" style="display: flex; flex-direction: column; gap: 5px;">
-                        <label>Mission Description</label>
-                        <textarea id="desc" rows="4" required placeholder="Describe the thermal intensity and situation..."></textarea>
-
-                        <label>Severity Level</label>
-                        <select id="severity">
-                            <option value="medium">🟠 Medium Hazard</option>
-                            <option value="high">🔴 High Danger</option>
-                            <option value="critical">🚨 Critical Threat</option>
-                        </select>
-
-                        <button type="button" class="location-btn" id="locBtn" style="margin-top: 15px;">
-                            <i class="fa-solid fa-location-crosshairs"></i> Detect GPS Location
-                        </button>
-                        <div class="status" id="locStatus" style="font-size: 0.75rem; opacity: 0.6; font-family: monospace;">[ CLICK MAP TO SELECT TARGET ]</div>
-
-                        <input type="hidden" id="lat">
-                        <input type="hidden" id="lng">
-
-                        <button type="submit" class="submit-btn" id="submitBtn" disabled>
-                            <i class="fa-solid fa-satellite"></i> SUBMIT MISSION
-                        </button>
-                        <div id="resStatus" style="text-align: center; margin-top: 15px; font-weight: 700; font-size: 0.85rem;"></div>
-                    </form>
-                </div>
-
-                <div class="map-side">
-                    <div id="map"></div>
-                    <p style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.75rem; margin-top: 15px; letter-spacing: 1px; font-weight: 600;">
-                        <i class="fa-solid fa-earth-africa"></i> LIVE EMERGENCY DATA FEED
-                    </p>
-                </div>
+            <div class="map-side">
+                <div id="map"></div>
+                <p
+                    style="text-align: center; color: rgba(255,255,255,0.2); font-size: 0.75rem; margin-top: 15px; letter-spacing: 1px; font-weight: 600;">
+                    <i class="fa-solid fa-earth-africa"></i> LIVE EMERGENCY DATA FEED
+                </p>
             </div>
+        </div>
         {% endif %}
     </div>
 
@@ -350,10 +388,29 @@
         }
 
         const map = L.map("map", { zoomControl: false }).setView([36.166, 1.333], 12);
-        L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png", {   
-            maxZoom: 20,
-            attribution: '&copy; Stadia Maps'
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
+
+        // Add search functionality
+        document.getElementById("map-search").addEventListener("keypress", async (e) => {
+            if (e.key === "Enter") {
+                const query = e.target.value;
+                if (!query) return;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=dz`);
+                    const data = await res.json();
+                    if (data.length > 0) {
+                        const { lat, lon } = data[0];
+                        map.flyTo([lat, lon], 14);
+                        setLocation(parseFloat(lat), parseFloat(lon));
+                    }
+                } catch (err) {
+                    console.error("Search failed", err);
+                }
+            }
+        });
 
         let marker;
         const alertLayer = L.layerGroup().addTo(map);
@@ -362,10 +419,10 @@
             const latInp = document.getElementById("lat");
             const lngInp = document.getElementById("lng");
             const btn = document.getElementById("submitBtn");
-            if(latInp) latInp.value = lat;
-            if(lngInp) lngInp.value = lng;
-            if(btn) btn.disabled = false;
-            
+            if (latInp) latInp.value = lat;
+            if (lngInp) lngInp.value = lng;
+            if (btn) btn.disabled = false;
+
             document.getElementById("locStatus").textContent = `TARGET LOCKED: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
             if (marker) marker.setLatLng([lat, lng]);
@@ -376,7 +433,7 @@
         map.on("click", (e) => setLocation(e.latlng.lat, e.latlng.lng));
 
         const locBtn = document.getElementById("locBtn");
-        if(locBtn) {
+        if (locBtn) {
             locBtn.addEventListener("click", () => {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
@@ -393,7 +450,7 @@
                 alerts.forEach(a => {
                     if (a.status === 'resolved') return;
                     const duration = getDurationString(a.created_at);
-                    
+
                     const fireIcon = L.divIcon({
                         className: '',
                         html: `<div style="position:relative; width:40px; height:40px; display:flex; justify-content:center; align-items:center;">
@@ -404,7 +461,7 @@
                         iconAnchor: [20, 30]
                     });
 
-                    L.marker([a.lat, a.lng], {icon: fireIcon}).bindPopup(`
+                    L.marker([a.lat, a.lng], { icon: fireIcon }).bindPopup(`
                         <div style="text-align:center; padding: 5px;">
                             <b style="color:#ff4757; font-size:1.1rem;">🔥 Incident</b><br>
                             <div style="margin: 8px 0; font-weight: 800; color:#aaa;">
@@ -414,19 +471,19 @@
                         </div>
                     `).addTo(alertLayer);
                 });
-            } catch (err) {}
+            } catch (err) { }
         }
 
         fetchAlerts();
         setInterval(fetchAlerts, 15000);
 
         const reportForm = document.getElementById("reportForm");
-        if(reportForm) {
+        if (reportForm) {
             reportForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const resStatus = document.getElementById("resStatus");
                 resStatus.innerHTML = "TRANSCEIVING MISSION DATA...";
-                
+
                 const payload = {
                     title: "Citizen Report",
                     description: document.getElementById("desc").value,
@@ -459,4 +516,5 @@
     </script>
     <script src="{{ url_for('static', filename='js/fire_particles.js') }}"></script>
 </body>
+
 </html>

@@ -40,6 +40,16 @@
         .btn-hq { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
         .empty-mission { text-align: center; padding: 50px 20px; }
         .empty-mission .icon { font-size: 3rem; display: block; margin-bottom: 15px; filter: grayscale(0.5); }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(230, 57, 70, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
+        }
+        .pulsing-alert {
+            animation: pulse-red 2s infinite;
+            border-color: #e63946 !important;
+        }
     </style>
 </head>
 <body>
@@ -76,63 +86,78 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Top Bar -->
-            <header class="top-bar glass-panel" style="margin-bottom:14px; flex-shrink:0;">
-                <div class="search-box">
-                    <span class="icon">📡</span>
-                    <span style="font-size:0.85rem; font-weight:600; color:rgba(255,200,50,0.8);">SCANNING FREQUENCIES...</span>
+            <header class="top-bar-premium">
+                <div class="search-container-modern">
+                    <span class="search-icon-modern">🔍</span>
+                    <input type="text" placeholder="Search for unit, incident, or place..." id="search-input">
+                    <span class="search-shortcut">⌘ + Space</span>
                 </div>
-                <div class="header-controls" style="display:flex; align-items:center; gap:14px;">
-                    <div class="user-pill">
-                        {% if user.picture and user.picture.startswith('http') %}
-                        <img src="{{ user.picture }}" alt="" style="width:26px; height:26px; border-radius:50%;">
-                        {% else %}
-                        <span style="width:26px; height:26px; border-radius:50%; background:#e63946; display:inline-flex; align-items:center; justify-content:center; font-weight:800;">{{ user.name[0]|upper }}</span>
-                        {% endif %}
-                        <span style="font-size:0.85rem; font-weight:600;">{{ user.name }} (AGENT)</span>
+
+                <div class="header-actions-premium">
+                    <div class="clock-premium">
+                        <span id="current-time">00:00:00</span>
+                    </div>
+                    <button class="action-circle" onclick="refreshData()"><i class="icon-refresh">🔄</i></button>
+                    <div class="notif-wrapper">
+                        <button id="btn-notifications" class="action-circle">
+                            🔔<span id="notif-badge" class="notif-badge-premium hidden">0</span>
+                        </button>
+                        <div id="notif-dropdown" class="notif-dropdown-premium hidden">
+                            <div class="notif-header-premium">
+                                <h3>TACTICAL ALERTS</h3>
+                                <button class="clear-all" onclick="clearAllNotifications()">Clear All</button>
+                            </div>
+                            <div id="notif-list" class="notif-list-premium">
+                                <div class="notif-empty">📡 Scanning for alerts...</div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="theme-toggle" class="action-circle" title="Toggle Dark/Light Mode">🌙</button>
+                    <button id="view-toggle" class="action-circle" onclick="toggleMapView()" title="Toggle Map/Panels Focus">↕️</button>
+
+                    <div class="user-profile-premium">
+                        <img src="{{ user.picture or 'https://cdn-icons-png.flaticon.com/512/149/149071.png' }}"
+                            alt="Profile" class="profile-img-mod">
+                        <div class="profile-info-mod">
+                            <span class="profile-name">{{ user.name }}</span>
+                            <span class="profile-handle">{{ user.email }}</span>
+                        </div>
+                        <span class="profile-arrow">▾</span>
                     </div>
                 </div>
             </header>
 
-            <!-- Map -->
-            <div id="map" style="height:380px; width:100%; border-radius:10px; border:1px solid rgba(230,57,70,0.4); flex-shrink:0; margin-bottom:16px; position:relative; z-index:10;"></div>
+            <div id="map" class="map-view glass-panel">
+                <div id="weather-widget" class="weather-widget"></div>
+            </div>
 
-            <!-- Panels -->
-            <div style="flex:1; overflow-y:auto;">
+            <div class="panels-container">
+                <div class="drawer-handle" onclick="toggleMapView()">
+                    <div class="handle-bar"></div>
+                    <span class="handle-text">TACTICAL DATA DRAWER</span>
+                </div>
+
                 <!-- Mission Panel -->
                 <div id="panel-placeholder" class="dashboard-panel-section">
-                    <div class="mission-card">
-                        <div id="active-mission-container" style="margin-top: 10px;">
-                            <div class="empty-mission">
-                                <span class="icon" style="filter: drop-shadow(0 0 10px rgba(255,200,50,0.3));">🛰️</span>
-                                <p style="color:rgba(255,255,255,0.6); font-weight:600; font-size: 0.85rem;">SCANNING FREQUENCIES...<br><span style="opacity: 0.5;">NO ACTIVE DISPATCHES DETECTED</span></p>
+                    <div class="dashboard-grid">
+                        <div class="dash-card tactical-panel" style="grid-column: span 1.5;">
+                            <h3>🚒 TACTICAL MISSION CENTER</h3>
+                            <div id="active-mission-container" style="margin-top:20px;">
+                                <div class="empty-state">📡 Scanning for emergency dispatches...</div>
+                            </div>
+                            
+                            <div id="agent-controls" class="hidden" style="margin-top:20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <button class="action-btn btn-arrived" onclick="updateMissionStatus(null, 'arrived')">
+                                    📍 ARRIVED ON SITE
+                                </button>
+                                <button class="action-btn btn-complete" onclick="updateMissionStatus(null, 'extinguished')">
+                                    ✅ MISSION COMPLETED
+                                </button>
                             </div>
                         </div>
-
-                        <div id="tactical-mission-details" class="hidden">
-                            <div class="mission-status-grid">
-                                <div class="mission-stat"><h4>ETA</h4><div class="val" id="mission-eta" style="color: #00f0ff; text-shadow: 0 0 10px rgba(0,240,255,0.3);">–</div></div>
-                                <div class="mission-stat"><h4>SEVERITY</h4><div class="val" id="mission-severity" style="color: #ff4b2b; text-shadow: 0 0 10px rgba(255,75,43,0.3);">–</div></div>
-                            </div>
-                        </div>
-
-                        <div id="telemetry-section" style="margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-                            <h4 style="font-size: 0.7rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">📡 Tactical Telemetry</h4>
-                            <div style="height: 150px; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;">
-                                <canvas id="trendChart"></canvas>
-                            </div>
-                        </div>
-
-                        <div id="agent-controls" class="hidden" style="margin-top:20px;">
-                            <button class="action-btn btn-arrived" onclick="updateMissionStatus(null, 'arrived')">
-                                📍 ARRIVED ON SITE
-                            </button>
-                            <button class="action-btn btn-complete" onclick="updateMissionStatus(null, 'extinguished')">
-                                ✅ MISSION COMPLETED
-                            </button>
-                            <button class="action-btn btn-hq" onclick="showToast('Comm Link', 'Connecting HQ...', 'info')">
-                                📞 CONTACT HQ
-                            </button>
+                        <div class="dash-card">
+                            <h3>📊 Mission Pulse</h3>
+                            <div style="height: 140px;"><canvas id="trendChart"></canvas></div>
                         </div>
                     </div>
                 </div>
@@ -141,11 +166,16 @@
                 <div id="panel-reports" class="dashboard-panel-section hidden">
                     <div class="dash-card">
                         <h3>📋 Mission History</h3>
-                        <table style="width:100%; border-collapse:collapse; font-size:0.88rem;">
-                            <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.5);">
-                                <th style="padding:10px; text-align:left;">ID</th>
-                                <th>Severity</th><th>Status</th><th>Location</th>
-                            </tr></thead>
+                        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.03);">
+                                    <th style="padding:15px; color:var(--electric-blue);">ID</th>
+                                    <th style="padding:15px; color:var(--electric-blue);">TIME</th>
+                                    <th style="padding:15px; color:var(--electric-blue);">LOCATION</th>
+                                    <th style="padding:15px; color:var(--electric-blue);">SEVERITY</th>
+                                    <th style="padding:15px; color:var(--electric-blue);">STATUS</th>
+                                </tr>
+                            </thead>
                             <tbody id="reports-table-body"></tbody>
                         </table>
                     </div>
@@ -157,7 +187,6 @@
     <!-- Hidden -->
     <input type="hidden" id="user-role" value="fireman">
     <div id="toast-container" class="toast-container"></div>
-    <div id="notif-dropdown" class="notif-dropdown hidden"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}?v={{ range(1, 99999) | random }}"></script>
