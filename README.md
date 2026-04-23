@@ -47,5 +47,13 @@
    python app.py
    ```
 
+## 🔒 Security & Best Practices
+
+The system is built with professional security standards to ensure tactical data integrity:
+- **Environment Isolation**: Sensitive credentials (PostgreSQL passwords, API keys) are strictly isolated in a `.env` file and excluded from version control via `.gitignore`.
+- **Role-Based Security**: Access to Admin and Fireman dashboards is protected by strict server-side role validation.
+- **Session Protection**: Flask sessions are cryptographically signed using a unique secret key to prevent session hijacking.
+- **Data Integrity**: All PostgreSQL queries use parameterized inputs to protect against SQL injection.
+
 ---
 **Developed by mmam64358-lgtm**
